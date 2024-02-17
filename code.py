@@ -23,7 +23,6 @@ os._exit(0)
 import torch, random, gc
 from modelscope.pipelines import pipeline
 from modelscope.outputs import OutputKeys
-
 torch.manual_seed(random.randint(0, 2147483647))
 pipe = pipeline('text-to-video-synthesis', '/content/models')
 
@@ -34,30 +33,22 @@ import gc
 import datetime
 from IPython.display import HTML
 
-# Assuming you have already imported necessary libraries like torch, pipe, and OutputKeys
+# Get user input for the text prompt
+prompt_text = input("Enter the text prompt: ")
 
-# Clear CUDA cache and garbage collect to free up memory
+# Assuming `pipe` function is defined elsewhere and `OutputKeys` is imported properly
 with torch.no_grad():
     torch.cuda.empty_cache()
 gc.collect()
 
-# Input text for generating video
 test_text = {
-    'text': 'panda eat bamboo',
+    'text': prompt_text,  # Use the prompt_text variable here
 }
+output_video_path = pipe(test_text,)[OutputKeys.OUTPUT_VIDEO]
 
-# Generating video with adjusted parameters
-num_frames = 150  # Adjust the number of frames to increase the duration
-fps = 24  # Adjust the frames per second if needed
-output_video_path = pipe(test_text, num_frames=num_frames, fps=fps)[OutputKeys.OUTPUT_VIDEO]
-
-# Output file path for the new video
 new_video_path = f'/content/videos/{datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")}.mp4'
-
-# Use ffmpeg to convert video format and save the new video
 !ffmpeg -y -i {output_video_path} -c:v libx264 -c:a aac -strict -2 {new_video_path} >/dev/null 2>&1
 
-# Print paths of original and new videos
 print(output_video_path, '->', new_video_path)
 
 
